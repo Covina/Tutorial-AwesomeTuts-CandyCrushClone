@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class CandyArray {
+public class CandyArray
+{
 
     // Crate the two-dimensional array
     GameObject[,] candies = new GameObject[GameVariables.Rows, GameVariables.Columns];
@@ -21,7 +22,8 @@ public class CandyArray {
             try
             {
                 return candies[row, column];
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 throw;
             }
@@ -84,6 +86,156 @@ public class CandyArray {
         Swap(backup1, backup2);
 
     }
+
+
+    /// <summary>
+    /// Checks for matches along a row
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    private IEnumerable<GameObject> GetMatchesHorizontally(GameObject obj)
+    {
+        // Create list for candy objects
+        List<GameObject> matches = new List<GameObject>();
+
+        // add the passed in objects
+        matches.Add(obj);
+
+        // get the Candy class object
+        var candy = obj.GetComponent<Candy>();
+
+        if(candy.Column != 0)
+        {
+            // Scan to the left to find all sequential matches
+            for(int column = candy.Column - 1; column >= 0; column--)
+            {
+                // Check object at that position is same type of candy as this "candy"
+                if (candies[candy.Row, column].GetComponent<Candy>().IsSameType(candy))
+                {
+                    // add it to the match list
+                    matches.Add(candies[candy.Row, column]);
+
+                } else
+                {
+                    // no match, so stop looping
+                    break;
+                }
+
+            }
+
+        } // search left side
+
+
+        // search on the right side
+        if (candy.Column != GameVariables.Columns - 1)
+        {
+            // scan to the right to find all sequential matches
+            for (int column = candy.Column + 1; column < GameVariables.Columns; column++)
+            {
+                // Check object at that position is same type of candy as this "candy"
+                if (candies[candy.Row, column].GetComponent<Candy>().IsSameType(candy))
+                {
+                    // add it to the match list
+                    matches.Add(candies[candy.Row, column]);
+
+                }
+                else
+                {
+                    // no match, so stop looping
+                    break;
+                }
+
+
+            }  // end for loop
+        }
+
+        // check for minimum matches required
+        if(matches.Count < GameVariables.MinimumMatches)
+        {
+            // remove all entries if no valid matches
+            matches.Clear();
+        }
+
+        // return de-duped list
+        return matches.Distinct();
+
+    } // GetMatchesHorizontally()
+
+
+    /// <summary>
+    /// Check matches along the rows
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    private IEnumerable<GameObject> GetMatchesVertically(GameObject obj)
+    {
+        // Create a list of matches
+        List<GameObject> matches = new List<GameObject>();
+
+        // add the starting object to the list
+        matches.Add(obj);
+
+        // get Candy Component
+        var candy = obj.GetComponent<Candy>();
+
+        // start checking down rows.
+        if (candy.Row != 0)
+        {
+            // Scan below to find all sequential matches
+            for (int row = candy.Row - 1; row >= 0; row--)
+            {
+                // Check object at that position is same type of candy as this "candy"
+                if (candies[row, candy.Column].GetComponent<Candy>().IsSameType(candy))
+                {
+                    // add it to the match list
+                    matches.Add(candies[row, candy.Column]);
+
+                }
+                else
+                {
+                    // first wrong match, so stop looping
+                    break;
+                }
+
+            }
+
+        } // search down rows
+
+        // start checking UP rows.
+        if (candy.Row != GameVariables.Rows - 1)
+        {
+            // Scan up the rows until we hit max rows
+            for (int row = candy.Row + 1; row < GameVariables.Rows; row++)
+            {
+                // Check object at that position is same type of candy as this "candy"
+                if (candies[row, candy.Column].GetComponent<Candy>().IsSameType(candy))
+                {
+                    // add it to the match list
+                    matches.Add(candies[row, candy.Column]);
+
+                }
+                else
+                {
+                    // first wrong match, so stop looping
+                    break;
+                }
+
+            }
+
+        } // search down rows
+
+        // if not enough matches, clear it out
+        if(matches.Count < GameVariables.MinimumMatches)
+        {
+            matches.Clear();
+        }
+
+        // return de-duped (or empty) matches.
+        return matches.Distinct();
+       
+
+    } // GetMatchesVertically()
+
 
 
 }
