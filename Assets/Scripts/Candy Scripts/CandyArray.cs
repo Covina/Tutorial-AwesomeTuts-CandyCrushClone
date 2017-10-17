@@ -317,5 +317,97 @@ public class CandyArray
 
     }
 
+    /// <summary>
+    /// Find all the candies that are collapsing downward
+    /// </summary>
+    /// <param name="columns"></param>
+    /// <returns></returns>
+    public AlteredCandyInfo Collapse(IEnumerable<int> columns)
+    {
+
+        AlteredCandyInfo collapseInfo = new AlteredCandyInfo();
+
+        // loop through all columns
+        foreach(var column in columns)
+        {
+            // Loop through each row
+            for(int row = 0; row < GameVariables.Rows - 1; row++)
+            {
+
+                // Search for a destroyed candy location
+                if(candies[row, column] == null)
+                {
+
+                    // Now navigate the column upward to find the first non-null candy
+                    for(int row2 = row + 1; row2 < GameVariables.Rows; row2++)
+                    {
+
+                        // Did we find a non-null candy spot?
+                        if(candies[row2, column] != null)
+                        {
+
+                            // We found a candy, so set the object at that destroyed position to the first non null object
+                            candies[row, column] = candies[row2, column];
+
+                            // nullify the found candy position
+                            candies[row2, column] = null;
+
+                            // Update the max distance between the destroyed bean and its first non-null bean above it
+                            if(row2 - row > collapseInfo.maxDistance)
+                            {
+                                collapseInfo.maxDistance = row2 - row;
+                            }
+
+                            // Update the candy array positioning information
+                            candies[row, column].GetComponent<Candy>().Row = row;
+                            candies[row, column].GetComponent<Candy>().Column = column;
+
+                            // Add the candy to the collapsing info
+                            collapseInfo.AddCandy(candies[row, column]);
+
+                            // break loop
+                            break;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        } 
+
+        return collapseInfo;
+
+    } // Collapse()
+
+
+    /// <summary>
+    /// Generate a List of all the empty game object position within a column
+    /// </summary>
+    /// <param name="column"></param>
+    /// <returns></returns>
+    public IEnumerable<CandyInfo> GetEmptyItemsOnColumn(int column)
+    {
+        // Create empty items list to return
+        List<CandyInfo> emptyItems = new List<CandyInfo>();
+
+        // Loop through the rows for the passed in column
+        for(int row = 0; row < GameVariables.Rows; row++)
+        {
+            // if we found an empty game object position in this column
+            if(candies[row, column] == null)
+            {
+                // add it to the emptyItems list, leveraging the setter
+                emptyItems.Add(new CandyInfo() { Row = row, Column = column });
+
+            }
+
+        }
+
+        return emptyItems;
+
+    } // GetEmptyItemsOnColumn()
 
 }
