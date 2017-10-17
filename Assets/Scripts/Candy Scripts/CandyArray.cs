@@ -237,5 +237,85 @@ public class CandyArray
     } // GetMatchesVertically()
 
 
+    private bool ContainsDestroyWholeRowColumnBonus(IEnumerable<GameObject> matches)
+    {
+        // did enough matches exist
+        if(matches.Count() >= GameVariables.MinimumMatches)
+        {
+            // Does the list of matches contain a bonus candy that destroys the row and column?
+            foreach(var item in matches)
+            {
+                if(BonusTypeChecker.ContainsDestroyWholeWorColumn(item.GetComponent<Candy>().Bonus))
+                {
+                    return true;
+                }
+
+            }
+
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Grab all objects for a specific row based on the passed candy location
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    private IEnumerable<GameObject> GetEntireRow(GameObject obj)
+    {
+        // create list to store all beans in a row
+        List<GameObject> matches = new List<GameObject>();
+
+        // get the row location
+        int row = obj.GetComponent<Candy>().Row;
+
+        // loop through the row from left to right
+        for(int column = 0; column < GameVariables.Columns; column++)
+        {
+            // add the candy object
+            matches.Add(candies[row, column]);
+        }
+
+        return matches;
+
+    }
+
+    /// <summary>
+    /// Get the entire column of beans based on location of passed object
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    private IEnumerable<GameObject> GetEntireColumn(GameObject obj)
+    {
+        // create list to store all beans in a row
+        List<GameObject> matches = new List<GameObject>();
+
+        // get the row location
+        int column = obj.GetComponent<Candy>().Column;
+
+        // loop through the row from left to right
+        for (int row = 0; row < GameVariables.Columns; row++)
+        {
+            // add the candy object
+            matches.Add(candies[row, column]);
+        }
+
+        return matches;
+
+    }
+
+
+    /// <summary>
+    /// Remove the item from the array
+    /// </summary>
+    /// <param name="item"></param>
+    public void Remove(GameObject item)
+    {
+        // Remove the passed bean from the candies array
+        candies[item.GetComponent<Candy>().Row, item.GetComponent<Candy>().Column] = null;
+
+    }
+
 
 }
