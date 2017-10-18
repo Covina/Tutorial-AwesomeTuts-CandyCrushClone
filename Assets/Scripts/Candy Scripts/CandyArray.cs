@@ -410,4 +410,85 @@ public class CandyArray
 
     } // GetEmptyItemsOnColumn()
 
+
+
+    /// <summary>
+    /// Get all the matches adjacent to the candy
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    public MatchesInfo GetMatches(GameObject obj)
+    {
+
+        MatchesInfo matchesInfo = new MatchesInfo();
+
+        // Get any horizontal matches adjacent to the passed object
+        var horizontalMatches = GetMatchesHorizontally(obj);
+
+        // Does the match contain a bonus bean that destroys the entire row + column?
+        if(ContainsDestroyWholeRowColumnBonus(horizontalMatches))
+        {
+            // if yes, then get all the objects in the row.
+            horizontalMatches = GetEntireRow(obj);
+
+            // if the matches info doesn't have the info about the bonus, make sure it does.
+            if(!BonusTypeChecker.ContainsDestroyWholeWorColumn(matchesInfo.BonusesContained))
+            {
+                matchesInfo.BonusesContained = BonusType.DestroyWholeRowColumn;
+            }
+        }
+
+        // Add all the row matches to the list
+        matchesInfo.AddObjectRange(horizontalMatches);
+
+        // ==== Now do the same for vertical column ====
+
+
+        // Get any horizontal matches adjacent to the passed object
+        var verticalMatches = GetMatchesVertically(obj);
+
+        // Does the match contain a bonus bean that destroys the entire row + column?
+        if (ContainsDestroyWholeRowColumnBonus(verticalMatches))
+        {
+            // if yes, then get all the objects in the column.
+            verticalMatches = GetEntireColumn(obj);
+
+            // if the matches info doesn't have the info about the bonus, make sure it does.
+            if (!BonusTypeChecker.ContainsDestroyWholeWorColumn(matchesInfo.BonusesContained))
+            {
+                matchesInfo.BonusesContained = BonusType.DestroyWholeRowColumn;
+            }
+        }
+
+        // Add all the vertical matches to the list
+        matchesInfo.AddObjectRange(verticalMatches);
+
+        // return the list of all matched candies
+        return matchesInfo;
+
+    }
+
+    /// <summary>
+    /// Look for newly matched candies based on candy repopulations
+    /// </summary>
+    /// <param name="objs"></param>
+    /// <returns></returns>
+    public IEnumerable<GameObject> GetRefillMatches( IEnumerable<GameObject> objs)
+    {
+        // create a list for new matches
+        List<GameObject> matches = new List<GameObject>();
+
+        // Loop through the passed list
+        foreach(var gameObj in objs)
+        {
+            matches.AddRange(GetMatches(gameObj).MatchedCandy);
+        }
+
+
+        return matches.Distinct();
+        
+
+    }
+
+
 }
