@@ -88,21 +88,21 @@ public class MatchChecker {
 
     }
 
-
+    // checking to the left of the specific candy
     public static List<GameObject> CheckHorizontal1(int row, int column, CandyArray candies)
     {
 
         /*  EXAMPLE *\
          
-         * * * * * * *
-         * * * * * * *
-         * * * * * * *
-         * * * @ & * *
-         * * & * * * * 
+         * * * * *
+         * * * * *
+         * * * * *
+         * * @ & *
+         * & * * * 
          
          \*         */
 
-        // Prep to look at the column one place to the right
+        // Prep to look at the column one place to the left
         if(column <= GameVariables.Columns - 2)
         {
 
@@ -124,11 +124,11 @@ public class MatchChecker {
 
                         /*  EXAMPLE *\
 
-                         * * * * * * *
-                         * * * * * * *
-                         * * & * * * *
-                         * * * @ & * *
-                         * * * * * * * 
+                         * * * * *
+                         * * * * *
+                         * & * * *
+                         * * @ & *
+                         * * * * * 
 
                          \*         */
 
@@ -162,7 +162,164 @@ public class MatchChecker {
         return null;
 
 
-    }
+    } // CheckHorizontal1
+
+
+
+    // checking to the right of the specific candy
+    public static List<GameObject> CheckHorizontal2(int row, int column, CandyArray candies)
+    {
+
+        /*  EXAMPLE *\
+         
+         * * * * *
+         * * * * *
+         * * * * *
+         * @ & * *
+         * * * & * 
+         
+         \*         */
+
+        // Prep to look at the column two places to the right
+        if (column <= GameVariables.Columns - 3)
+        {
+
+            // check if the candy to the right is the same Type
+            if (candies[row, column].GetComponent<Candy>().IsSameType(candies[row, column + 1].GetComponent<Candy>()))
+            {
+                // If we are at least in the 2nd row (starts numbering at zero), and if we are at least 3 columns from end on the right
+                if (row >= 1 && column <= GameVariables.Columns - 3)
+                {
+                    // check two right, one down
+                    if (candies[row, column].GetComponent<Candy>().IsSameType(candies[row - 1, column + 2].GetComponent<Candy>()))
+                    {
+
+                        return new List<GameObject>
+                        {
+                            candies[row, column],
+                            candies[row, column + 1],
+                            candies[row - 1, column + 2]
+                        };
+
+                    }
+                    else if (row <= GameVariables.Rows - 2 && column <= GameVariables.Columns - 3)
+                    {
+                        /*  EXAMPLE *\
+
+                         * * * * *
+                         * * * * * 
+                         * * * & * 
+                         * @ & * *
+                         * * * * *  
+
+                         \*         */
+
+                        // check two right, one up
+                        if (candies[row, column].GetComponent<Candy>().IsSameType(candies[row + 1, column + 2].GetComponent<Candy>()))
+                        {
+
+                            return new List<GameObject>
+                            {
+                                candies[row, column],
+                                candies[row, column + 1],
+                                candies[row + 1, column + 2]
+                            };
+
+                        }
+
+                    }
+
+
+                }
+
+            }
+
+
+        } 
+
+
+        // catch all
+        return null;
+
+
+    } // CheckHorizontal2
+
+
+
+    // checking to the right of the specific candy, skipping one in the row
+    public static List<GameObject> CheckHorizontal3(int row, int column, CandyArray candies)
+    {
+
+        /*  EXAMPLE *\
+         
+         * * * * *
+         * * * * *
+         * * * * *
+         * @ & * &
+         * * * * * 
+         
+         \*         */
+
+        // Prep to look at the column two places to the right
+        if (column <= GameVariables.Columns - 4)
+        {
+
+            // check if the candy to the right is the same Type and check if the candy +3 to the right
+            if (
+                candies[row, column].GetComponent<Candy>().IsSameType(candies[row, column + 1].GetComponent<Candy>())
+                &&
+                candies[row, column].GetComponent<Candy>().IsSameType(candies[row, column + 3].GetComponent<Candy>())
+                )
+                {
+
+                    return new List<GameObject>
+                        {
+                            candies[row, column],
+                            candies[row, column + 1],
+                            candies[row, column + 3]
+                        };
+                }
+
+        }
+
+
+        /*  EXAMPLE *\
+         
+         * * * * *
+         * * * * *
+         * * * * *
+         * & * @ &
+         * * * * * 
+         
+         \*         */
+
+
+        // Prep to look at the column two places to the left
+        if (column >= 2 && column <= GameVariables.Columns - 2)
+        {
+            // check if the candy to the right is the same Type and check if the candy -2 to the left
+            if (
+                candies[row, column].GetComponent<Candy>().IsSameType(candies[row, column + 1].GetComponent<Candy>())
+                &&
+                candies[row, column].GetComponent<Candy>().IsSameType(candies[row, column - 2].GetComponent<Candy>())
+                )
+                {
+
+                    return new List<GameObject>
+                        {
+                            candies[row, column],
+                            candies[row, column + 1],
+                            candies[row, column - 2]
+                        };
+                }
+        }
+
+        // catch all
+        return null;
+
+    } // CheckHorizontal3
+
+
 
 
 }
