@@ -78,6 +78,91 @@ public class MatchChecker {
 
 
 
+    public static IEnumerable<GameObject> GetPotentialMatches(CandyArray candies)
+    {
+
+        // create a list of Lists
+        List<List< GameObject>> matches = new List<List<GameObject>>();
+
+        return null;
+
+    }
+
+
+    public static List<GameObject> CheckHorizontal1(int row, int column, CandyArray candies)
+    {
+
+        /*  EXAMPLE *\
+         
+         * * * * * * *
+         * * * * * * *
+         * * * * * * *
+         * * * @ & * *
+         * * & * * * * 
+         
+         \*         */
+
+        // Prep to look at the column one place to the right
+        if(column <= GameVariables.Columns - 2)
+        {
+
+            // check if the candy to the right is the same Type
+            if( candies[row, column].GetComponent<Candy>().IsSameType( candies[row, column + 1].GetComponent<Candy>() ) )
+            {
+                // If we are at least in the 2nd row (starts numbering at zero)
+                if(row >= 1 && column >= 1)
+                {
+                    // check one left, one down
+                    if (candies[row, column].GetComponent<Candy>().IsSameType(candies[row - 1, column - 1].GetComponent<Candy>())) {
+
+                        return new List<GameObject>
+                        {
+                            candies[row, column],
+                            candies[row, column + 1],
+                            candies[row - 1, column - 1]
+                        };
+
+                        /*  EXAMPLE *\
+
+                         * * * * * * *
+                         * * * * * * *
+                         * * & * * * *
+                         * * * @ & * *
+                         * * * * * * * 
+
+                         \*         */
+
+                        
+                    } else if (row <= GameVariables.Rows - 1 && column > 1) {
+
+                        // check one left, one up
+                        if(candies[row, column].GetComponent<Candy>().IsSameType( candies[row + 1, column - 1].GetComponent<Candy>()) ) {
+
+                            return new List<GameObject>
+                            {
+                                candies[row, column],
+                                candies[row, column + 1],
+                                candies[row + 1, column - 1]
+                            };
+
+                        }
+
+                    }
+                 
+
+                }
+
+            }
+
+
+        } // end if(column <= GameVariables.Columns - 2)
+
+
+        // catch all
+        return null;
+
+
+    }
 
 
 }
