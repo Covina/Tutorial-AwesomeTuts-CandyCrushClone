@@ -346,7 +346,7 @@ public class MatchChecker {
                     // compare the two
                     if (candies[row, column].GetComponent<Candy>().IsSameType(candies[row - 1, column - 1].GetComponent<Candy>()))
                     {
-                        return new List<GameObject>()
+                        return new List<GameObject>
                         {
                             candies[row, column],
                             candies[row + 1, column],
@@ -372,7 +372,7 @@ public class MatchChecker {
                     // compare the two
                     if (candies[row, column].GetComponent<Candy>().IsSameType(candies[row - 1, column + 1].GetComponent<Candy>()))
                     {
-                        return new List<GameObject>()
+                        return new List<GameObject>
                         {
                             candies[row, column],
                             candies[row + 1, column],
@@ -397,17 +397,129 @@ public class MatchChecker {
     public static List<GameObject> CheckVertical2(int row, int column, CandyArray candies)
     {
 
+        /*  EXAMPLE *\
+
+          * * * * *      // Row 4
+          & * * * *      // Row 3
+          * & * * *      // Row 2
+          * @ * * *      // Row 1
+          * * * * *      // Row 0
+
+          \*         */
+
+        if(row <= GameVariables.Rows - 3)
+        {
+
+            if(candies[row, column].GetComponent<Candy>().IsSameType( candies[row + 1, column].GetComponent<Candy>() ) ) {
+
+                if ( column >= 1)
+                {
+
+                    if(candies[row, column].GetComponent<Candy>().IsSameType( candies[row +2, column - 1].GetComponent<Candy>() ))
+                    
+                        return new List<GameObject>
+                        {
+                            candies[row, column],
+                            candies[row + 1, column],
+                            candies[row + 2, column - 1]
+                        };
+                    }
+
+                } else if ( column <= GameVariables.Columns - 2)
+                {
+                    /*  EXAMPLE *\
+
+                      * * * * *      // Row 4
+                      * * & * *      // Row 3
+                      * & * * *      // Row 2
+                      * @ * * *      // Row 1
+                      * * * * *      // Row 0
+
+                      \*         */
+
+                if(candies[row, column].GetComponent<Candy>().IsSameType( candies[row + 2, column +1].GetComponent<Candy>() ))
+                    {
+
+                        return new List<GameObject>
+                        {
+                            candies[row, column],
+                            candies[row + 1, column],
+                            candies[row + 2, column + 1]
+                        };
+
+                    }
+
+
+                }
+
+        }
 
         return null;
     }
 
     public static List<GameObject> CheckVertical3(int row, int column, CandyArray candies)
     {
+        /*  EXAMPLE *\
+
+          * & * * *      // Row 4
+          * * * * *      // Row 3
+          * & * * *      // Row 2
+          * @ * * *      // Row 1
+          * * * * *      // Row 0
+
+          \*         */
+
+        if (row <= GameVariables.Rows - 4)
+        {
+
+            if (
+                candies[row, column].GetComponent<Candy>().IsSameType(candies[row + 1, column].GetComponent<Candy>())
+                &&
+                candies[row, column].GetComponent<Candy>().IsSameType(candies[row + 3, column].GetComponent<Candy>())
+                )
+            {
+                return new List<GameObject>
+                    {
+                        candies[row, column],
+                        candies[row + 1, column],
+                        candies[row + 3, column]
+                    };
+            }
+        }
+
+
+        /*  EXAMPLE *\
+
+          * * * * *      // Row 4
+          * & * * *      // Row 3
+          * @ * * *      // Row 2
+          * * * * *      // Row 1
+          * & * * *      // Row 0
+
+          \*         */
+
+        if( row >= 2 && row <= GameVariables.Rows - 2) {
+
+            if(
+                candies[row, column].GetComponent<Candy>().IsSameType( candies[row + 1, column].GetComponent<Candy>())
+                &&
+                candies[row - 2, column].GetComponent<Candy>().IsSameType( candies[row - 2, column].GetComponent<Candy>())
+                )
+            {
+                return new List<GameObject>
+                    {
+                        candies[row, column],
+                        candies[row - 1, column],
+                        candies[row + 2, column]
+                    };
+
+            }
+
+        }
 
 
         return null;
-    }
 
-
+    } // CheckVertical3
 
 }
