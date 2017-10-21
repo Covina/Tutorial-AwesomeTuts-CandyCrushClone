@@ -82,7 +82,49 @@ public class MatchChecker {
     {
 
         // create a list of Lists
-        List<List< GameObject>> matches = new List<List<GameObject>>();
+        List< List<GameObject>> matches = new List<List<GameObject>>();
+
+        // loop through each candy and check for matches
+        for(int row = 0; row < GameVariables.Rows; row++)
+        {
+
+            for(int column = 0; column < GameVariables.Columns; column++)
+            {
+                // check horizontal matches
+                var matches1 = CheckHorizontal1(row, column, candies);
+                var matches2 = CheckHorizontal2(row, column, candies);
+                var matches3 = CheckHorizontal3(row, column, candies);
+
+                // Check vertical matches
+                var matches4 = CheckVertical1(row, column, candies);
+                var matches5 = CheckVertical2(row, column, candies);
+                var matches6 = CheckVertical3(row, column, candies);
+
+                // Now verify if they had anything, and if so, add it to the total matches list
+                if (matches1 != null) matches.Add(matches1);
+                if (matches2 != null) matches.Add(matches2);
+                if (matches3 != null) matches.Add(matches3);
+                if (matches4 != null) matches.Add(matches4);
+                if (matches5 != null) matches.Add(matches5);
+                if (matches6 != null) matches.Add(matches6);
+
+                // if we have more than three matches, return a random one
+                if(matches.Count >= 3)
+                {
+                    return matches[Random.Range(0, matches.Count - 1)];
+                }
+
+                // if we're in middle of the loop and we have one or two, return it.
+                if(row > GameVariables.Rows / 2 && matches.Count > 0 && matches.Count <= 2)
+                {
+                    return matches[Random.Range(0, matches.Count - 1)];
+                }
+
+            }
+
+
+        }
+
 
         return null;
 
@@ -456,6 +498,8 @@ public class MatchChecker {
 
         return null;
     }
+
+
 
     public static List<GameObject> CheckVertical3(int row, int column, CandyArray candies)
     {
