@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4641144309614170}
   - component: {fileID: 212155725870979224}
   - component: {fileID: 61391102324110322}
+  - component: {fileID: 114982687981128608}
   m_Layer: 0
   m_Name: swirl_orange
   m_TagString: Untagged
@@ -66,6 +67,17 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.8, y: 0.8}
   m_EdgeRadius: 0
+--- !u!114 &114982687981128608
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1271747985585692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffad0dc7c5585c64bbdd32a5b6984963, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &212155725870979224
 SpriteRenderer:
   m_ObjectHideFlags: 1

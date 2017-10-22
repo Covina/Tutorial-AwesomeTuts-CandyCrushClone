@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4975871912917392}
   - component: {fileID: 212169119183822472}
   - component: {fileID: 61382616809265220}
+  - component: {fileID: 114870209520220794}
   m_Layer: 0
   m_Name: swirl_purple
   m_TagString: Untagged
@@ -66,6 +67,17 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.8, y: 0.8}
   m_EdgeRadius: 0
+--- !u!114 &114870209520220794
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1231061972747404}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffad0dc7c5585c64bbdd32a5b6984963, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &212169119183822472
 SpriteRenderer:
   m_ObjectHideFlags: 1
