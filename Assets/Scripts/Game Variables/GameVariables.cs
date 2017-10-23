@@ -21,7 +21,7 @@ public class GameVariables {
     public static float WaitBeforePotentialMatchesCheck = 2.0f;
 
     // Alter opacity for suggested matches
-    public static float OpactiyAnimationDelay = 0.5f;
+    public static float OpactiyAnimationDelay = 0.05f;
 
     // Must have 3 in a row to trigger destruction
     public static int MinimumMatches = 3;

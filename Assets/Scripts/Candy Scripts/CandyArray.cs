@@ -45,7 +45,7 @@ public class CandyArray
     {
         // Store backups
         backup1 = g1;
-        backup1 = g2;
+        backup2 = g2;
 
         var g1Candy = g1.GetComponent<Candy>();
 

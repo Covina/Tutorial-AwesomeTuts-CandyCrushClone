@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 public class CandyManager : MonoBehaviour {
 
@@ -61,10 +62,74 @@ public class CandyManager : MonoBehaviour {
         // Populate the level
         InitializeCandyAndSpawnPositions();
 
+        StartCheckForPotentialMatches();
+
     }
 
     // Update is called once per frame
     void Update() {
+
+        //
+        if(state == GameState.None)
+        {
+            // Touch input
+            if(Input.GetMouseButtonDown(0))
+            {
+
+                // Figure out what they touched
+                var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+
+                if (hit.collider != null)
+                {
+
+                    hitGo = hit.collider.gameObject;
+
+                    // update game state to be aware the player is selecting
+                    state = GameState.SelectionStarted;
+                }
+
+            }
+
+        } else if (state == GameState.SelectionStarted)
+        {
+            // player has tapped twice
+            if (Input.GetMouseButtonDown(0))
+            {
+
+                // Figure out what they touched
+                var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+
+                // The player touched something and it was not the same item
+                if (hit.collider != null && hitGo != hit.collider.gameObject)
+                {
+
+                    StopCheckForPotentialMatches();
+
+                    // Compare if the two objects are not neighbors
+                    if (!MatchChecker.AreHorizontalOrVericalNeighbors(hitGo.GetComponent<Candy>(), hit.collider.gameObject.GetComponent<Candy>()))
+                    {
+                        state = GameState.None;
+                    } else
+                    {
+                        // next to each other
+                        state = GameState.Animating;
+
+                        // assign sorting layer
+                        FixSortingLayer(hitGo, hit.collider.gameObject);
+
+                        // Pass the raycast hit
+                        StartCoroutine(FindMatchesAndCollapse(hit));
+                    }
+
+
+                }
+
+            }
+
+        }
+
+
+
 
     }
 
@@ -379,8 +444,293 @@ public class CandyManager : MonoBehaviour {
 
 
 
+    /// <summary>
+    /// For touching beans, make suer the touched is always on top.
+    /// </summary>
+    /// <param name="hitGo"></param>
+    /// <param name="hitGo2"></param>
+    private void FixSortingLayer(GameObject hitGo, GameObject hitGo2)
+    {
+        // get sprite renderer components
+        SpriteRenderer sp1 = hitGo.GetComponent<SpriteRenderer>();
+        SpriteRenderer sp2 = hitGo2.GetComponent<SpriteRenderer>();
+
+        // if there is a difference already
+        if(sp1.sortingOrder <= sp2.sortingOrder)
+        {
+            // assign the new sorting order
+            sp1.sortingOrder = 1;
+            sp2.sortingOrder = 0;
+        }
 
 
+    }
+
+
+    /// <summary>
+    /// Blow up the candy then destroy the explosion animation and the item itself
+    /// </summary>
+    /// <param name="item"></param>
+    private void RemoveFromScene(GameObject item)
+    {
+        // create the explosion
+        var explosion = Instantiate(GetRandomExplosion(), item.transform.position, Quaternion.identity) as GameObject;
+
+        // delay the destruction
+        Destroy(explosion, GameVariables.ExplosionAnimationDuration);
+
+        Destroy(item);
+
+    }
+
+    /// <summary>
+    /// Get a bonus type
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    private GameObject GetBonusFromType(string type)
+    {
+        // Get color by parsing name "bean_green"
+        string color = type.Split('_')[1].Trim();
+
+        // Loop through bonus prefabs to see if it has a matching one.
+        foreach (var item in bonusPrefabs)
+        {
+            // check for the matching color bonus
+            if(item.GetComponent<Candy>().Type.Contains(color))
+            {
+                // return the bonus swirl item
+                return item;
+            }
+
+        }
+
+        throw new System.Exception("You passed the wrong type");
+    }
+
+
+    /// <summary>
+    /// Replace a candy with the bonus version of it.
+    /// </summary>
+    /// <param name="hitGoCache"></param>
+    private void CreateBonus(Candy hitGoCache)
+    {
+        // Create game object
+        GameObject Bonus = Instantiate(
+                            GetBonusFromType(hitGoCache.Type), 
+                            bottomRight + new Vector2(hitGoCache.Column * candySize.x, hitGoCache.Row * candySize.y), 
+                            Quaternion.identity
+                            ) as GameObject;
+
+
+        // replace candy with the bonus version we just made
+        candies[hitGoCache.Row, hitGoCache.Column] = Bonus;
+
+        // Get ref to candy component
+        var bonusCandy = Bonus.GetComponent<Candy>();
+
+        // Initialize the bonus candy
+        bonusCandy.Initialize(hitGoCache.Type, hitGoCache.Row, hitGoCache.Column);
+
+        // Specify the bonus type - the behavior when used in the game
+        bonusCandy.Bonus = BonusType.DestroyWholeRowColumn;
+
+    }
+
+
+    /// <summary>
+    /// Create new candies in empty spaces within each column
+    /// </summary>
+    /// <param name="columnsWithMissingCandies"></param>
+    /// <returns></returns>
+    private AlteredCandyInfo CreateNewCandyInSpecificColumns(IEnumerable<int> columnsWithMissingCandies)
+    {
+
+        AlteredCandyInfo newCandyInfo = new AlteredCandyInfo();
+        
+        // loop through each column to find the empty spaces
+        foreach(int column in columnsWithMissingCandies)
+        {
+            var emptyItems = candies.GetEmptyItemsOnColumn(column);
+
+            // for each missing item, generate a new candy
+            foreach(var item in emptyItems)
+            {
+                // generate a new candy object
+                var go = GetRandomCandy();
+
+                // instantiate this candy 
+                GameObject newCandy = Instantiate(go, spawnPositions[column], Quaternion.identity) as GameObject;
+
+                // initialize this candy and put it in its position
+                newCandy.GetComponent<Candy>().Initialize(go.GetComponent<Candy>().Type, item.Row, item.Column);
+
+                // 
+                if(GameVariables.Rows - item.Row > newCandyInfo.maxDistance)
+                {
+                    // Update the max distance
+                    newCandyInfo.maxDistance = GameVariables.Rows - item.Row;
+
+                }
+
+                // add the new candy into the array
+                candies[item.Row, item.Column] = newCandy;
+
+                // add the candy to the new candy info
+                newCandyInfo.AddCandy(newCandy);
+
+            }
+
+        }
+
+
+
+
+        return newCandyInfo;
+    }
+
+
+    //  
+    private void MoveAndAnimate(IEnumerable<GameObject> movedGameObjects, int distance)
+    {
+
+        // loop through and animate each object
+        foreach(var item in movedGameObjects)
+        {
+            // use the GoKit plugin to easily animate 
+            item.transform.positionTo(GameVariables.MoveAnimationDuration * distance, bottomRight + new Vector2(item.GetComponent<Candy>().Column * candySize.x, item.GetComponent<Candy>().Row * candySize.y));
+
+        }
+
+
+    }
+
+
+    private IEnumerator FindMatchesAndCollapse(RaycastHit2D hit2)
+    {
+
+        // assign 2nd game object to the one that was touched.
+        var hitGo2 = hit2.collider.gameObject;
+
+        // Swap the candy positions
+        candies.Swap(hitGo, hitGo2);
+
+        // Move passed item into position 2
+        hitGo.transform.positionTo(GameVariables.AnimationDuration, hit2.transform.position);
+
+        // Move item 2 into position 
+        hitGo2.transform.positionTo(GameVariables.AnimationDuration, hitGo.transform.position);
+
+        // wait until its over.
+        yield return new WaitForSeconds(GameVariables.AnimationDuration);
+
+
+        var hitGoMatchesInfo = candies.GetMatches(hitGo);
+
+        var hitGo2MatchesInfo = candies.GetMatches(hitGo2);
+
+        // join the first and second lists, de-duplicating, to result in the total matches
+        var totalMatches = hitGoMatchesInfo.MatchedCandy.Union(hitGo2MatchesInfo.MatchedCandy).Distinct();
+
+
+        // if there is not a valid match, such as only being 2 in a row, wrong colors, etc... we need to undo the animated swap.
+        if(totalMatches.Count() < GameVariables.MinimumMatches)
+        {
+            // Move passed item back to position 1
+            hitGo.transform.positionTo(GameVariables.AnimationDuration, hitGo2.transform.position);
+
+            // Move item 2 back to its position 
+            hitGo2.transform.localPositionTo(GameVariables.AnimationDuration, hitGo.transform.position);
+
+            yield return new WaitForSeconds(GameVariables.AnimationDuration);
+
+            candies.UndoSwap();
+        }
+
+
+        // figure out if we're going to grant a bonus
+        bool addBonus = totalMatches.Count() >= GameVariables.MinimumMatchesForBonus
+            && !BonusTypeChecker.ContainsDestroyWholeWorColumn(hitGoMatchesInfo.BonusesContained)       // if the items being destroyed doesn't already contain a bonus
+            && !BonusTypeChecker.ContainsDestroyWholeWorColumn(hitGo2MatchesInfo.BonusesContained);     // if the items being destroyed doesn't already contain a bonus
+
+
+        Candy hitGoCache = null;
+
+        if(addBonus == true)
+        {
+            hitGoCache = new Candy();
+
+            // assign one of the two game objects depending if its the same type
+            var sameTypeGo = hitGoMatchesInfo.MatchedCandy.Count() > 0 ? hitGo : hitGo2;
+
+            // get a reference to the Candy component on the SameTypeGo gameobject
+            var candy = sameTypeGo.GetComponent<Candy>();
+
+            // initialize the bonus candy
+            hitGoCache.Initialize(candy.Type, candy.Row, candy.Column);
+        }
+
+        // track the while loop
+        int timesRun = 1;
+
+        while(totalMatches.Count() >= GameVariables.MinimumMatches)
+        {
+            // earn points for each 3-item match
+            IncreaseScore(totalMatches.Count() - 2 * GameVariables.Match3Score);
+
+            // bonus if multiples
+            if(timesRun >= 2)
+            {
+                IncreaseScore(GameVariables.SubsequelMatchScore);
+            }
+
+            // trigger sound effect
+            soundManager.PlaySound();
+
+            // Now remove the individual items
+            foreach(var item in totalMatches)
+            {
+                candies.Remove(item);
+                RemoveFromScene(item);
+            }
+
+            // If there is a bonus candy to be generated, create it.
+            if(addBonus)
+            {
+                CreateBonus(hitGoCache);
+            }
+
+            addBonus = false;
+
+
+            var columns = totalMatches.Select(go => go.GetComponent<Candy>().Column).Distinct();
+
+            var collapsedCandyInfo = candies.Collapse(columns);
+
+            var newCandyInfo = CreateNewCandyInSpecificColumns(columns);
+
+            int maxDistance = Mathf.Max(collapsedCandyInfo.maxDistance, newCandyInfo.maxDistance);
+
+            MoveAndAnimate(newCandyInfo.AlteredCandy, maxDistance);
+            MoveAndAnimate(collapsedCandyInfo.AlteredCandy, maxDistance);
+
+            // wait for time for each movement animation that has to occur
+            yield return new WaitForSeconds(GameVariables.MoveAnimationDuration * maxDistance);
+
+            // Checking for new matches in the collapsed columns
+            totalMatches = candies.GetRefillMatches(collapsedCandyInfo.AlteredCandy).Union(candies.GetRefillMatches(newCandyInfo.AlteredCandy)).Distinct();
+
+            timesRun++;
+
+        } // end while
+
+        // reset game state
+        state = GameState.None;
+
+        // start checking for potential matches again.
+        StartCheckForPotentialMatches();
+
+    }
 
 
 }
